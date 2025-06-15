@@ -1,0 +1,15 @@
+<!-- app/templates/auth/login.html -->
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Вход{% endblock %}
+
+{% block app_content %}
+    <h1>Вход в системата</h1>
+    <div class="row">
+        <div class="col-md-4">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+    <p>Нов потребител? <a href="{{ url_for('auth.register') }}">Натиснете тук, за да се регистрирате!</a></p>
+{% endblock %}

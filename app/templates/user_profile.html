@@ -1,0 +1,15 @@
+<!-- app/templates/user_profile.html -->
+{% extends "base.html" %}
+
+{% block app_content %}
+    <h1>Профил на {{ user.username }}</h1>
+    <hr>
+    <p><strong>Потребителско име:</strong> {{ user.username }}</p>
+    <p><strong>Имейл:</strong> {{ user.email }}</p>
+    <p><strong>Роля:</strong> {{ user.role.name }}</p>
+
+    {% if user == current_user %}
+        <a href="#" class="btn btn-primary">Редактирай профила</a>
+        <!-- Ще добавим функционалност за редактиране по-късно -->
+    {% endif %}
+{% endblock %}

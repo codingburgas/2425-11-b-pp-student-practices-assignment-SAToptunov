@@ -1,0 +1,37 @@
+<!-- app/templates/classifier/classify.html -->
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block app_content %}
+    <h1>Spam Класификатор</h1>
+    <p>Въведете текста, който искате да проверите, в полето по-долу.</p>
+    <div class="row">
+        <div class="col-md-8">
+            {{ wtf.quick_form(form) }}
+        </div>
+    </div>
+
+    {% if result %}
+    <div class="row" style="margin-top: 20px;">
+        <div class="col-md-8">
+            <h2>Резултат от класификацията:</h2>
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <strong>Вашето съобщение:</strong>
+                </div>
+                <div class="panel-body">
+                    <p><em>{{ result.message }}</em></p>
+                </div>
+                <div class="panel-footer">
+                    {% if result.prediction == 'Spam' %}
+                        <h4 style="color: red;">Предсказание: <strong>{{ result.prediction }}</strong></h4>
+                    {% else %}
+                        <h4 style="color: green;">Предсказание: <strong>{{ result.prediction }}</strong></h4>
+                    {% endif %}
+                    <p>Вероятност: {{ result.probability }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+{% endblock %}

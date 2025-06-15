@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <h1>Здравей, {{ current_user.username if current_user.is_authenticated else 'Гост' }}!</h1>
+    <p>Добре дошли в уеб приложението за класификация на спам имейли.</p>
+    {% if current_user.is_authenticated %}
+        <p>Вече можете да използвате функционалностите на сайта.</p>
+    {% else %}
+        <p>Моля, <a href="{{ url_for('auth.login') }}">влезте</a> или се <a href="{{ url_for('auth.register') }}">регистрирайте</a>, за да продължите.</p>
+    {% endif %}
+{% endblock %}
