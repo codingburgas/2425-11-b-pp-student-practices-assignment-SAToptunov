@@ -20,44 +20,9 @@ import traceback
 MODEL_PATH = os.path.join(BASE_DIR, 'ai_model', 'spam_classifier_model.pkl')
 VOCAB_PATH = os.path.join(BASE_DIR, 'ai_model', 'vocabulary.pkl')
 
-print("--- ДЕБЪГ НА ПЪТИЩАТА ---")
-print(f"Изчислен базов път (BASE_DIR): {BASE_DIR}")
-print(f"Пълен път до модела (MODEL_PATH): {MODEL_PATH}")
-print(f"Пълен път до речника (VOCAB_PATH): {VOCAB_PATH}")
-print("-------------------------")
-
 # Зареждаме модела и речника
-model = None
-vocabulary = None
-
-print("--- ПРОВЕРКА НА СЪЩЕСТВУВАНЕТО НА ФАЙЛОВЕ ---")
-
-# Проверка за файла на модела
-if not os.path.exists(MODEL_PATH):
-    print(f"ГРЕШКА: Файлът на модела НЕ Е НАМЕРЕН на път: {MODEL_PATH}")
-else:
-    print(f"OK: Файлът на модела е намерен на път: {MODEL_PATH}")
-    try:
-        model = joblib.load(MODEL_PATH)
-        print(">>> Моделът е зареден успешно.")
-    except Exception as e:
-        print(f"ГРЕШКА при зареждане на модела: {e}")
-        traceback.print_exc()
-
-        # Проверка за файла на речника
-if not os.path.exists(VOCAB_PATH):
-    print(f"ГРЕШКА: Файлът на речника НЕ Е НАМЕРЕН на път: {VOCAB_PATH}")
-else:
-    print(f"OK: Файлът на речника е намерен на път: {VOCAB_PATH}")
-    try:
-        vocabulary = joblib.load(VOCAB_PATH)
-        print(">>> Речникът е зареден успешно.")
-    except Exception as e:
-        print(f"ГРЕШКА при зареждане на речника: {e}")
-
-print("-------------------------------------------------")
-
-
+model = joblib.load(MODEL_PATH)
+vocabulary = joblib.load(VOCAB_PATH)
 
 def clean_text(text):
     """Почиства текста по същия начин, както при обучението."""

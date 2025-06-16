@@ -9,7 +9,7 @@ migrate = Migrate(app, db)
 
 # Това позволява да се стартира приложението директно с 'python run.py'
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
 
 # Добавяме контекст към flask shell за по-лесна работа
 @app.shell_context_processor

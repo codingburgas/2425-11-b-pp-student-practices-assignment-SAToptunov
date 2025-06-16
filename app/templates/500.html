@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Вътрешна грешка в сървъра{% endblock %}
+
+{% block app_content %}
+<div class="container text-center mt-5">
+    <h1 class="display-1">500</h1>
+    <h2>Вътрешна грешка в сървъра</h2>
+    <p class="lead">
+        Съжаляваме, възникна неочаквана грешка. Нашият екип е уведомен.
+        Моля, опитайте отново по-късно.
+    </p>
+    <a href="{{ url_for('main.index') }}" class="btn btn-primary mt-3">Към началната страница</a>
+</div>
+{% endblock %}
