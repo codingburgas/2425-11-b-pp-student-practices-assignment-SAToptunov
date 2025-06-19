@@ -1,5 +1,4 @@
 # app/classifier/utils.py
-import traceback
 
 import joblib
 import numpy as np
@@ -15,7 +14,6 @@ if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 
 from ai_model.logistic_regression_model import LogisticRegression
-import traceback
 
 MODEL_PATH = os.path.join(BASE_DIR, 'ai_model', 'spam_classifier_model.pkl')
 VOCAB_PATH = os.path.join(BASE_DIR, 'ai_model', 'vocabulary.pkl')

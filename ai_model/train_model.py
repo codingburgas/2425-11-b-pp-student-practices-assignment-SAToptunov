@@ -5,7 +5,7 @@ import os
 # --- КОРЕКЦИЯ 1: Използване на относителен импорт ---
 # Тъй като train_model.py и logistic_regression_model.py са в един и същи пакет (ai_model),
 # използваме точка (.), за да кажем на Python да търси в текущата папка.
-from .logistic_regression_model import LogisticRegression
+from logistic_regression_model import LogisticRegression
 
 # --- 1. Дефиниране на метрики за оценка (Изискване 5) ---
 # Това е направено отлично, оставяме го както е.
