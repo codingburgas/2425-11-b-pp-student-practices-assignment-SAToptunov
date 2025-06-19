@@ -1,11 +1,13 @@
 # app/auth/routes.py
-from flask import render_template, flash, redirect, url_for, request
+from flask import render_template, flash, redirect, url_for, request, current_app
 from app import db
 from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm
-from flask_login import current_user, login_user, logout_user
+from flask_login import login_user, logout_user, current_user, login_required
 from app.models import User, Role
 from urllib.parse import urlsplit
+from app.email import send_confirmation_email
+from itsdangerous import URLSafeTimedSerializer
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -47,14 +49,50 @@ def register():
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
-
-        # Присвояване на роля 'User' по подразбиране
-        user_role = Role.query.filter_by(name='User').first()
-        user.role = user_role
-
         db.session.add(user)
         db.session.commit()
-        flash('Поздравления, вие се регистрирахте успешно!', 'success')
-        # TODO: Добави логика за изпращане на имейл за потвърждение
+
+        # Изпращаме имейла за потвърждение
+        send_confirmation_email(user.email)
+
+        flash('Регистрацията е успешна! Моля, проверете имейла си, за да потвърдите акаунта си.')
         return redirect(url_for('auth.login'))
     return render_template('auth/register.html', title='Регистрация', form=form)
+
+
+@bp.route('/confirm/<token>')
+@login_required
+def confirm_email(token):
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(token, salt='email-confirmation-salt', max_age=3600)
+    except:
+        flash('Линкът за потвърждение е невалиден или е изтекъл.', 'danger')
+        return redirect(url_for('main.index'))
+
+    if email != current_user.email:
+        flash('Не можете да потвърдите този имейл адрес.', 'danger')
+        return redirect(url_for('main.index'))
+
+    if current_user.email_confirmed:
+        flash('Акаунтът вече е потвърден.', 'info')
+    else:
+        current_user.email_confirmed = True
+        db.session.add(current_user)
+        db.session.commit()
+        flash('Успешно потвърдихте своя имейл адрес!', 'success')
+
+    return redirect(url_for('main.index'))
+
+
+@bp.route('/resend_confirmation')
+@login_required
+def resend_confirmation_email():
+    if current_user.email_confirmed:
+        flash('Твоят имейл вече е потвърден.', 'info')
+        return redirect(url_for('main.index'))
+
+    # Извикваме същата функция, която използваме и при регистрация
+    send_confirmation_email(current_user.email)
+    flash('Изпратен е нов линк за потвърждение на твоя имейл адрес.', 'success')
+    return redirect(url_for('main.user_profile', username=current_user.username))

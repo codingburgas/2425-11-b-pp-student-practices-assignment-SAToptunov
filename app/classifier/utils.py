@@ -6,10 +6,8 @@ import re
 import os
 import sys
 
-# Дефинираме пътищата до файловете на модела веднъж
-# Това е по-стабилно от относителни пътища
+# --- 1. Дефинираме пътищата и променливите, но ги оставяме празни (None) ---
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-
 if BASE_DIR not in sys.path:
     sys.path.append(BASE_DIR)
 
@@ -18,47 +16,61 @@ from ai_model.logistic_regression_model import LogisticRegression
 MODEL_PATH = os.path.join(BASE_DIR, 'ai_model', 'spam_classifier_model.pkl')
 VOCAB_PATH = os.path.join(BASE_DIR, 'ai_model', 'vocabulary.pkl')
 
-# Зареждаме модела и речника
-model = joblib.load(MODEL_PATH)
-vocabulary = joblib.load(VOCAB_PATH)
+# Глобални променливи за модела и речника
+model = None
+vocabulary = None
+
+
+def load_model_if_needed():
+    global model, vocabulary
+    if model is None or vocabulary is None:
+        print("--- AI моделът не е зареден. Зареждам го сега... ---")
+        try:
+            model = joblib.load(MODEL_PATH)
+            vocabulary = joblib.load(VOCAB_PATH)
+            print("--- Моделът и речникът са заредени успешно. ---")
+        except Exception as e:
+            print(f"ГРЕШКА при зареждане на модела: {e}")
+            pass
+
 
 def clean_text(text):
-    """Почиства текста по същия начин, както при обучението."""
     text = text.lower()
     text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
     return text
 
 
 def message_to_vector(message, vocab):
-    """Превръща текстово съобщение в числов вектор (Bag of Words)."""
     word_vector = np.zeros(len(vocab))
-    words_in_message = message.split()
+    words_in_message = set(message.split())
     for i, word in enumerate(vocab):
         if word in words_in_message:
             word_vector[i] = 1
     return word_vector
 
 
+# --- 3. Основната ни функция първо извиква функцията за зареждане ---
 def classify_message(message):
     """
     Основната функция, която приема съобщение и връща предсказание.
-    Връща: (клас, вероятност) -> ('Spam', 0.98) или ('Ham', 0.05)
     """
+    load_model_if_needed()
+
     if model is None or vocabulary is None:
-        return "Грешка: Моделът не е зареден.", 0.0
+        return "Грешка: AI моделът не е наличен или не може да бъде зареден.", 0.0
 
     cleaned_message = clean_text(message)
     vector = message_to_vector(cleaned_message, vocabulary)
-
-    # Моделът очаква 2D масив, затова преоразмеряваме вектора
     vector_reshaped = vector.reshape(1, -1)
 
-    # Предсказване
-    prediction_class = model.predict(vector_reshaped)[0]
-    prediction_proba = model.predict_proba(vector_reshaped)[0]
+    # --- КОРЕКЦИЯ НА ЛОГИКАТА ---
+    # predict_proba връща само една вероятност (за клас 1 - Spam)
+    prob_spam = model.predict_proba(vector_reshaped)[0]
 
-    if prediction_class == 1:
-        return "Spam", prediction_proba
+    # Сравняваме я директно с нашия праг (0.5)
+    if prob_spam > 0.5:
+        # Връщаме класа "Spam" и неговата вероятност
+        return "Spam", prob_spam
     else:
-        # За Ham, вероятността е 1 - P(Spam)
-        return "Ham (Not Spam)", 1 - prediction_proba
+        # Връщаме класа "Ham" и неговата вероятност (която е 1 - prob_spam)
+        return "Ham (Not Spam)", 1 - prob_spam

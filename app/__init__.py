@@ -1,3 +1,5 @@
+import hashlib
+
 from flask import Flask, render_template
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
@@ -33,6 +35,15 @@ def create_app(config_class=Config):
         bootstrap.init_app(app)
     # --------------------------------
 
+    @app.context_processor
+    def utility_processor():
+        def to_gravatar_hash(email_text):
+            if not isinstance(email_text, str):
+                return ''
+            return hashlib.md5(email_text.lower().encode('utf-8')).hexdigest()
+
+        return dict(to_gravatar_hash=to_gravatar_hash)
+
     # Регистрираме Blueprints
     from app.auth import bp as auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
@@ -43,6 +54,9 @@ def create_app(config_class=Config):
     from app.classifier import bp as classifier_bp
     app.register_blueprint(classifier_bp)
 
+    from app.admin import bp as admin_bp
+    app.register_blueprint(admin_bp, url_prefix='/admin')
+
     # Дефинираме глобални Error Handlers
     @app.errorhandler(404)
     def page_not_found(e):
@@ -52,6 +66,13 @@ def create_app(config_class=Config):
     def internal_server_error(e):
         db.session.rollback()
         return render_template('500.html'), 500
+
+    @app.context_processor
+    def inject_utility_processor():
+        def to_gravatar_hash(email_text):
+            return hashlib.md5(email_text.lower().encode('utf-8')).hexdigest()
+
+        return dict(to_gravatar_hash=to_gravatar_hash)
 
     return app
 

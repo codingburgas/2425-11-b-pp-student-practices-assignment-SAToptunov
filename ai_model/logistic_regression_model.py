@@ -22,6 +22,12 @@ class LogisticRegression:
         self.weights = None  # Теглата на модела (w)
         self.bias = None  # Свободният член (b)
 
+    def get_feature_weights(self):
+        """
+        Прост метод, който връща научените тегла за всеки признак.
+        """
+        return self.weights
+
     def _sigmoid(self, z):
         """
         Сигмоидна активационна функция.

@@ -1,37 +1,40 @@
-<!-- app/templates/classifier/classify.html -->
 {% extends "base.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
 
-{% block app_content %}
-    <h1>Spam Класификатор</h1>
-    <p>Въведете текста, който искате да проверите, в полето по-долу.</p>
-    <div class="row">
-        <div class="col-md-8">
-            {{ wtf.quick_form(form) }}
-        </div>
-    </div>
+{% block title %}Класификатор на съобщения{% endblock %}
 
-    {% if result %}
-    <div class="row" style="margin-top: 20px;">
-        <div class="col-md-8">
-            <h2>Резултат от класификацията:</h2>
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <strong>Вашето съобщение:</strong>
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Класифицирай съобщение</h2>
+                <p class="text-center text-muted">Въведете текста, който искате да проверите, в полето по-долу.</p>
+                <form method="POST" action="{{ url_for('classifier.classify') }}" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div class="mb-3">
+                        {{ form.message_text.label(class="form-label") }}
+                        {{ form.message_text(class="form-control", rows=8) }}
+                        {% for error in form.message_text.errors %}
+                            <span class="text-danger small">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-success") }}
+                    </div>
+                </form>
+
+                {% if prediction and probability %}
+                <div class="mt-5 p-4 rounded-3
+                    {% if prediction == 'Spam' %} bg-danger text-white
+                    {% else %} bg-success text-white
+                    {% endif %}">
+                    <h3 class="display-6">Резултат: {{ prediction }}</h3>
+                    <p class="lead">Вероятността за това предсказание е: <strong>{{ "%.2f"|format(probability * 100) }}%</strong></p>
                 </div>
-                <div class="panel-body">
-                    <p><em>{{ result.message }}</em></p>
-                </div>
-                <div class="panel-footer">
-                    {% if result.prediction == 'Spam' %}
-                        <h4 style="color: red;">Предсказание: <strong>{{ result.prediction }}</strong></h4>
-                    {% else %}
-                        <h4 style="color: green;">Предсказание: <strong>{{ result.prediction }}</strong></h4>
-                    {% endif %}
-                    <p>Вероятност: {{ result.probability }}</p>
-                </div>
+                {% endif %}
+
             </div>
         </div>
     </div>
-    {% endif %}
+</div>
 {% endblock %}

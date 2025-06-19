@@ -1,11 +1,39 @@
+
 {% extends "base.html" %}
 
-{% block app_content %}
-    <h1>Здравей, {{ current_user.username if current_user.is_authenticated else 'Гост' }}!</h1>
-    <p>Добре дошли в уеб приложението за класификация на спам имейли.</p>
-    {% if current_user.is_authenticated %}
-        <p>Вече можете да използвате функционалностите на сайта.</p>
-    {% else %}
-        <p>Моля, <a href="{{ url_for('auth.login') }}">влезте</a> или се <a href="{{ url_for('auth.register') }}">регистрирайте</a>, за да продължите.</p>
-    {% endif %}
+{% block title %}Начало - Spam Classifier{% endblock %}
+
+{% block content %}
+<div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
+    <div class="container-fluid py-5">
+        {% if current_user.is_authenticated %}
+            <h1 class="display-5 fw-bold">Здравей, {{ current_user.username }}!</h1>
+            <p class="col-md-8 fs-4">Добре дошъл отново в Spam Classifier. Готов ли си да разчистиш пощата си от нежелани съобщения?</p>
+            <a href="{{ url_for('classifier.classify') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-shield-shaded"></i> Отиди към класификатора
+            </a>
+        {% else %}
+            <h1 class="display-5 fw-bold">Защити се от Spam</h1>
+            <p class="col-md-8 fs-4">Използвай силата на изкуствения интелект, за да класифицираш твоите имейли и съобщения. Регистрирай се сега, за да започнеш.</p>
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Създай акаунт</a>
+            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Влез в системата</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row align-items-md-stretch">
+    <div class="col-md-6">
+        <div class="h-100 p-5 text-white bg-dark rounded-3">
+            <h2>Как работи?</h2>
+            <p>Нашият модел, базиран на Логистична Регресия и имплементиран от нулата, анализира текста на вашето съобщение и изчислява вероятността то да е спам. Всичко става за секунди!</p>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="h-100 p-5 bg-white border rounded-3">
+            <h2>Допринеси!</h2>
+            <p>Помогни ни да направим модела още по-умен! Чрез нашата система за анкети можеш да подаваш примери за съобщения, които да използваме за бъдещи обучения.</p>
+            <a href="#" class="btn btn-outline-secondary">Към анкетите (скоро)</a>
+        </div>
+    </div>
+</div>
 {% endblock %}

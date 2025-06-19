@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Администраторски панел{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Администраторски панел</h1>
+
+    <!-- Карти със статистика -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Общо потребители</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_users }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="bi bi-people-fill fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Потвърдени имейли</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ confirmed_users }}</div>
+                        </div>
+                         <div class="col-auto">
+                            <i class="bi bi-patch-check-fill fs-2 text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Таблица с потребители -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Списък с потребители</h6>
+        </div>
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <form method="GET" action="{{ url_for('admin.list_users') }}">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Търси по име или имейл..." name="q" value="{{ request.args.get('q', '') }}">
+                            <button class="btn btn-outline-primary" type="submit">Търси</button>
+                            {% if request.args.get('q') %}
+                                <a href="{{ url_for('admin.list_users') }}" class="btn btn-outline-secondary">Изчисти</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Потребител</th>
+                            <th>Имейл</th>
+                            <th>Роля</th>
+                            <th>Потвърден</th>
+                            <th>Регистриран на</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>
+                                <a href="{{ url_for('main.user_profile', username=user.username) }}">{{ user.username }}</a>
+                            </td>
+                            <td>{{ user.email }}</td>
+                            <td><span class="badge bg-secondary">{{ user.role.name }}</span></td>
+                            <td>
+                                {% if user.email_confirmed %}
+                                    <span class="badge bg-success">Да</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Не</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-primary btn-sm" title="Редактирай"><i class="bi bi-pencil-square"></i></a>
+                                {% if user.id != current_user.id %}
+                                <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="post" style="display:inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm" title="Изтрий" onclick="return confirm('Сигурни ли сте?');">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

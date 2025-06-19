@@ -5,33 +5,34 @@
 {% block content %}
 <div class="row">
     <div class="col-md-4 text-center">
-        <div class="card">
+        <div class="card shadow-sm">
             <div class="card-body">
-                <img src="https://www.gravatar.com/avatar/{{ user.email | to_gravatar_hash }}?d=identicon&s=150" class="img-fluid rounded-circle mb-3">
+                <!-- Използваме Gravatar за профилна снимка -->
+                <img src="https://www.gravatar.com/avatar/{{ to_gravatar_hash(user.email) }}?d=identicon&s=150" class="img-fluid rounded-circle mb-3" alt="Профилна снимка">
                 <h3>{{ user.username }}</h3>
                 <p class="text-muted">
                     {% if user.email_confirmed %}
                         <span class="badge bg-success">Имейл потвърден</span>
                     {% else %}
-                        <span class="badge bg-warning text-dark">Имейл не е потвърден</span>
+                        <span class="badge bg-warning text-dark">Имейл не е потвърден</span> 
+                        <a href="{{ url_for('auth.resend_confirmation_email') }}" class="d-block small mt-2">Изпрати отново линк</a>
                     {% endif %}
                 </p>
-                <!-- Бутон за редакция (води към бъдеща форма) -->
-                <a href="#" class="btn btn-outline-primary mt-2">Редактирай профила</a>
+                <a href="{{ url_for('main.edit_profile') }}" class="btn btn-outline-primary mt-2">Редактирай профила</a>
             </div>
         </div>
     </div>
     <div class="col-md-8">
-        <div class="card">
+        <div class="card shadow-sm">
             <div class="card-body">
                 <h4 class="card-title">Информация за потребителя</h4>
                 <hr>
                 <p><strong>Потребителско име:</strong> {{ user.username }}</p>
                 <p><strong>Имейл:</strong> {{ user.email }}</p>
-
+                
                 <h4 class="card-title mt-5">Статистика</h4>
                 <hr>
-                <p>Предстои да се добави статистика за направените класификации...</p>
+                <p>Тук може да се покаже статистика за направените класификации или подадените анкети...</p>
             </div>
         </div>
     </div>

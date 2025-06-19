@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Вход - Spam Classifier{% endblock %}
+{% block title %}Редакция на профил{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
+    <div class="col-md-6">
         <div class="card shadow-sm">
             <div class="card-body">
-                <h2 class="card-title text-center mb-4">Вход в системата</h2>
-                <form method="POST" action="{{ url_for('auth.login') }}" novalidate>
+                <h2 class="card-title text-center mb-4">Редактирай своя профил</h2>
+                <form method="POST" action="" novalidate>
                     {{ form.hidden_tag() }}
                     <div class="mb-3">
                         {{ form.username.label(class="form-label") }}
@@ -18,24 +18,17 @@
                         {% endfor %}
                     </div>
                     <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control", size=32) }}
-                        {% for error in form.password.errors %}
+                        {{ form.email.label(class="form-label") }}
+                        {{ form.email(class="form-control", size=64) }}
+                        {% for error in form.email.errors %}
                             <span class="text-danger small">{{ error }}</span>
                         {% endfor %}
                     </div>
-                    <div class="mb-3 form-check">
-                        {{ form.remember_me(class="form-check-input") }}
-                        {{ form.remember_me.label(class="form-check-label") }}
-                    </div>
-                    <div class="d-grid">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('main.user_profile', username=current_user.username) }}" class="btn btn-secondary">Отказ</a>
                         {{ form.submit(class="btn btn-primary") }}
                     </div>
                 </form>
-                <hr>
-                <div class="text-center">
-                    <p>Нямаш акаунт? <a href="{{ url_for('auth.register') }}">Регистрирай се</a></p>
-                </div>
             </div>
         </div>
     </div>

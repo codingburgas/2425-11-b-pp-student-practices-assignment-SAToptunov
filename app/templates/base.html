@@ -1,42 +1,92 @@
-<!-- app/templates/base.html -->
-{% extends "bootstrap/base.html" %}
+<!doctype html>
+<html lang="bg">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-{% block title %}
-    {% if title %}{{ title }} - Spam Classifier{% else %}Добре дошли в Spam Classifier{% endif %}
-{% endblock %}
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <!-- Икони на Bootstrap -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 
-{% block navbar %}
-    <nav class="navbar navbar-default">
-        <div class="container">
-            <div class="navbar-header">
-                <a class="navbar-brand" href="{{ url_for('main.index') }}">Spam Classifier</a>
-            </div>
-            <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav navbar-right">
-                    <li><a href="{{ url_for('main.index') }}">Начало</a></li>
-                    {% if current_user.is_anonymous %}
-                    <li><a href="{{ url_for('auth.login') }}">Вход</a></li>
-                    <li><a href="{{ url_for('auth.register') }}">Регистрация</a></li>
-                    {% else %}
-                    <li><a href="{{ url_for('classifier.classify') }}">Класификатор</a></li>
-                    <li><a href="{{ url_for('main.user_profile', username=current_user.username) }}">Профил</a></li>
-                    <li><a href="{{ url_for('auth.logout') }}">Изход</a></li>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+
+    <title>{% block title %}Spam Classifier{% endblock %}</title>
+</head>
+<body class="bg-light">
+
+<!-- Навигация -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">
+            <i class="bi bi-shield-check"></i> Spam Classifier
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.index') }}">Начало</a>
+                </li>
+                {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('classifier.classify') }}">Класификатор</a>
+                    </li>
+                    {% if current_user.is_admin() %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('admin.list_users') }}">Админ</a>
+                    </li>
                     {% endif %}
-                </ul>
-            </div>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-fill"></i> {{ current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('main.user_profile', username=current_user.username) }}">Моят профил</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Изход</a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('auth.login') }}">Вход</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-primary text-white" href="{{ url_for('auth.register') }}">Регистрация</a>
+                    </li>
+                {% endif %}
+            </ul>
         </div>
-    </nav>
-{% endblock %}
-
-{% block content %}
-    <div class="container">
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-        {% block app_content %}{% endblock %}
     </div>
-{% endblock %}
+</nav>
+
+<!-- Основно съдържание -->
+<main class="container">
+    <!-- Flash съобщения -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Блок за съдържанието на страницата -->
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Футър -->
+<footer class="text-center text-muted mt-5 mb-3">
+    <p>© 2024 Spam Classifier. Всички права запазени.</p>
+</footer>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
+
+</body>
+</html>
