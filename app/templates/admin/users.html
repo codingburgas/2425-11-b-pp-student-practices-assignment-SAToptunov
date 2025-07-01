@@ -95,6 +95,7 @@
                             <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') if user.created_at }}</td>
                             <td>
                                 <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" class="btn btn-primary btn-sm" title="Редактирай"><i class="bi bi-pencil-square"></i></a>
+                                <a href="{{ url_for('admin.user_predictions', user_id=user.id) }}" class="btn btn-info btn-sm" title="Виж предсказанията"><i class="bi bi-clock-history"></i></a>
                                 {% if user.id != current_user.id %}
                                 <form action="{{ url_for('admin.delete_user', user_id=user.id) }}" method="post" style="display:inline;">
                                     <button type="submit" class="btn btn-danger btn-sm" title="Изтрий" onclick="return confirm('Сигурни ли сте?');">

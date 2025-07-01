@@ -1,6 +1,6 @@
 # app/models.py
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -26,6 +26,26 @@ class Role(db.Model):
                 db.session.add(role)
         db.session.commit()
 
+class Prediction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    message_text = db.Column(db.Text, nullable=False)
+    prediction_class = db.Column(db.String(20), nullable=False) # "Spam" или "Ham (Not Spam)"
+    prediction_probability = db.Column(db.Float, nullable=False)
+    timestamp = db.Column(db.DateTime, index=True, default=lambda: datetime.now(timezone.utc))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Prediction {self.id} by User {self.user_id}>'
+
+class Feedback(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    rating = db.Column(db.Integer, nullable=False) # Оценка от 1 до 5
+    comment = db.Column(db.Text, nullable=True)
+    timestamp = db.Column(db.DateTime, index=True, default=lambda: datetime.now(timezone.utc))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+
+    def __repr__(self):
+        return f'<Feedback {self.id} by User {self.user_id}>'
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -35,6 +55,9 @@ class User(UserMixin, db.Model):
     role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
     created_at = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     email_confirmed = db.Column(db.Boolean, nullable=False, default=False)
+
+    predictions = db.relationship('Prediction', backref='author', lazy='dynamic')
+    feedbacks = db.relationship('Feedback', backref='author', lazy='dynamic')
 
     def __init__(self, **kwargs):
         super(User, self).__init__(**kwargs)

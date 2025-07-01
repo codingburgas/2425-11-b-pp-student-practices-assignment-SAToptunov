@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Оставете отзив{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h2 class="card-title text-center mb-4">Споделете вашето мнение</h2>
+                <p class="text-center text-muted">Вашата обратна връзка е важна за нас и ни помага да подобрим услугата.</p>
+                <form method="POST" action="" novalidate>
+                    {{ form.hidden_tag() }}
+                    <div class="mb-4 text-center">
+                        <label class="form-label">{{ form.rating.label }}</label>
+                        <div>
+                            {% for subfield in form.rating %}
+                                <div class="form-check form-check-inline">
+                                    {{ subfield(class="form-check-input") }}
+                                    <label class="form-check-label" for="{{ subfield.id }}">
+                                        <span style="color: #FFD700;">{{ subfield.label.text }}</span>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                         {% for error in form.rating.errors %}
+                            <span class="text-danger small d-block">{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="mb-3">
+                        {{ form.comment.label(class="form-label") }}
+                        {{ form.comment(class="form-control", rows=5, placeholder="Какво можем да подобрим?") }}
+                    </div>
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

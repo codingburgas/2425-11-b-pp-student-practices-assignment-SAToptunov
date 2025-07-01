@@ -8,6 +8,7 @@ from app.models import User, Role
 from urllib.parse import urlsplit
 from app.email import send_confirmation_email
 from itsdangerous import URLSafeTimedSerializer
+from sqlalchemy import or_
 
 
 @bp.route('/login', methods=['GET', 'POST'])
@@ -16,15 +17,24 @@ def login():
         return redirect(url_for('main.index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user is None or not user.check_password(form.password.data):
-            flash('Невалидно потребителско име или парола', 'danger')
-            return redirect(url_for('auth.login'))
+        # --- НАЧАЛО НА ПРОМЕНИТЕ В ЛОГИКАТА ---
 
-        # Тук можем да добавим проверка дали имейлът е потвърден
-        # if not user.confirmed:
-        #     flash('Моля, потвърдете имейл адреса си.', 'warning')
-        #     return redirect(url_for('auth.login'))
+        # 1. Взимаме въведената стойност
+        login_identifier = form.username.data
+
+        # 2. Правим заявка, която търси или по username, или по email
+        # .ilike() прави търсенето нечувствително към малки/големи букви
+        user = User.query.filter(
+            or_(
+                User.username.ilike(login_identifier),
+                User.email.ilike(login_identifier)
+            )
+        ).first()
+
+        # 3. Проверяваме дали е намерен потребител и дали паролата е вярна
+        if user is None or not user.check_password(form.password.data):
+            flash('Невалидно потребителско име, имейл или парола.', 'danger')
+            return redirect(url_for('auth.login'))
 
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')

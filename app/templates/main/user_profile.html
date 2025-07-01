@@ -4,17 +4,17 @@
 
 {% block content %}
 <div class="row">
+    <!-- Лява колона с информация за профила -->
     <div class="col-md-4 text-center">
         <div class="card shadow-sm">
             <div class="card-body">
-                <!-- Използваме Gravatar за профилна снимка -->
                 <img src="https://www.gravatar.com/avatar/{{ to_gravatar_hash(user.email) }}?d=identicon&s=150" class="img-fluid rounded-circle mb-3" alt="Профилна снимка">
                 <h3>{{ user.username }}</h3>
                 <p class="text-muted">
                     {% if user.email_confirmed %}
                         <span class="badge bg-success">Имейл потвърден</span>
                     {% else %}
-                        <span class="badge bg-warning text-dark">Имейл не е потвърден</span> 
+                        <span class="badge bg-warning text-dark">Имейл не е потвърден</span>
                         <a href="{{ url_for('auth.resend_confirmation_email') }}" class="d-block small mt-2">Изпрати отново линк</a>
                     {% endif %}
                 </p>
@@ -22,17 +22,64 @@
             </div>
         </div>
     </div>
+
+    <!-- Дясна колона с детайли и история -->
     <div class="col-md-8">
+        <!-- Карта с информация -->
         <div class="card shadow-sm">
             <div class="card-body">
                 <h4 class="card-title">Информация за потребителя</h4>
                 <hr>
                 <p><strong>Потребителско име:</strong> {{ user.username }}</p>
                 <p><strong>Имейл:</strong> {{ user.email }}</p>
-                
-                <h4 class="card-title mt-5">Статистика</h4>
+            </div>
+        </div>
+
+        <!-- Карта с история на предсказанията -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-body">
+                <h4 class="card-title">История на предсказанията</h4>
                 <hr>
-                <p>Тук може да се покаже статистика за направените класификации или подадените анкети...</p>
+
+                <!-- ===================================== -->
+                <!-- === КОРЕКЦИЯТА Е В ТОЗИ IF БЛОК === -->
+                <!-- ===================================== -->
+                {% if predictions and predictions|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50%;">Съобщение</th>
+                                    <th>Резултат</th>
+                                    <th>Вероятност</th>
+                                    <th>Дата</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pred in predictions %}
+                                    <tr>
+                                        <td><small class="text-muted">{{ pred.message_text }}</small></td>
+                                        <td>
+                                            <span class="badge
+                                                {% if pred.prediction_class == 'Spam' %} bg-danger
+                                                {% else %} bg-success
+                                                {% endif %}">
+                                                {{ pred.prediction_class }}
+                                            </span>
+                                        </td>
+                                        <td>{{ "%.1f"|format(pred.prediction_probability * 100) }}%</td>
+                                        <td><small>{{ pred.timestamp.strftime('%d-%m-%Y') }}</small></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">Все още нямате направени предсказания.</p>
+                {% endif %}
+                <!-- ===================================== -->
+                <!-- === КРАЙ НА IF БЛОКА === -->
+                <!-- ===================================== -->
             </div>
         </div>
     </div>

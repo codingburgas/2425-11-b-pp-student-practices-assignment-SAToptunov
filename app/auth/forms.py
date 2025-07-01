@@ -5,7 +5,9 @@ from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from app.models import User
 
 class LoginForm(FlaskForm):
-    username = StringField('Потребителско име', validators=[DataRequired()])
+    # --- ПРОМЯНА НА ЕТИКЕТА ---
+    username = StringField('Потребителско име или Имейл', validators=[DataRequired()])
+    # ---------------------------
     password = PasswordField('Парола', validators=[DataRequired()])
     remember_me = BooleanField('Запомни ме')
     submit = SubmitField('Вход')

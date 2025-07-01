@@ -30,6 +30,11 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{{ url_for('main.index') }}">Начало</a>
                 </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ url_for('main.reviews') }}">Отзиви</a>
+                </li>
+
                 {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('classifier.classify') }}">Класификатор</a>
@@ -45,6 +50,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
                             <li><a class="dropdown-item" href="{{ url_for('main.user_profile', username=current_user.username) }}">Моят профил</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('main.feedback') }}">Оставете отзив</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Изход</a></li>
                         </ul>

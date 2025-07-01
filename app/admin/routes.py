@@ -3,7 +3,7 @@ from flask_login import current_user
 from sqlalchemy import or_
 from . import bp
 from app import db
-from app.models import User, Role
+from app.models import User, Role, Prediction
 from app.decorators import admin_required
 from app.admin.forms import EditUserProfileAdminForm
 
@@ -56,6 +56,15 @@ def edit_user(user_id):
     form.role.data = user.role_id
     return render_template('admin/edit_user.html', form=form, user=user, title="Редакция на потребител")
 
+@bp.route('/user/<int:user_id>/predictions')
+@admin_required
+def user_predictions(user_id):
+    user = User.query.get_or_404(user_id)
+    predictions = user.predictions.order_by(Prediction.timestamp.desc()).all()
+    return render_template('admin/user_predictions.html',
+                           user=user,
+                           predictions=predictions,
+                           title=f"Предсказания на {user.username}")
 
 @bp.route('/delete_user/<int:user_id>', methods=['POST'])
 @admin_required

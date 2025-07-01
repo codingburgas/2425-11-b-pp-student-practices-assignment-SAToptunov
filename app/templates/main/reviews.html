@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="text-center mb-5">
+                <h1 class="display-5 fw-bold">Отзиви от нашите потребители</h1>
+                <p class="lead text-muted">Вижте какво мислят другите за нашата платформа.</p>
+            </div>
+
+            {% if feedbacks %}
+                {% for feedback in feedbacks %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="https://www.gravatar.com/avatar/{{ to_gravatar_hash(feedback.author.email) }}?d=identicon&s=40" class="rounded-circle me-3" alt="Аватар">
+                            <div>
+                                <h6 class="card-title mb-0">{{ feedback.author.username }}</h6>
+                                <small class="text-muted">{{ feedback.timestamp.strftime('%d %B %Y') }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            {% for i in range(feedback.rating) %}
+                                <i class="bi bi-star-fill" style="color: #FFD700;"></i>
+                            {% endfor %}
+                            {% for i in range(5 - feedback.rating) %}
+                                <i class="bi bi-star" style="color: #FFD700;"></i>
+                            {% endfor %}
+                        </div>
+
+                        {% if feedback.comment %}
+                            <p class="card-text">"{{ feedback.comment }}"</p>
+                        {% else %}
+                            <p class="card-text fst-italic text-muted">Потребителят не е оставил коментар.</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center">
+                    <p class="lead">Все още няма оставени отзиви. Бъдете първи!</p>
+                    <a href="{{ url_for('main.feedback') }}" class="btn btn-primary">Оставете отзив</a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -4,6 +4,8 @@ from app.classifier import bp
 from app.classifier.forms import ClassifierForm
 from app.classifier.utils import classify_message
 from flask_login import login_required, current_user
+from app.models import Prediction # Добави този импорт
+from app import db # Добави и този
 
 
 @bp.route('/classify', methods=['GET', 'POST'])
@@ -25,6 +27,15 @@ def classify():
         # Проверяваме дали предсказанието НЕ е съобщение за грешка
         if "Грешка" not in prediction:
             flash('Съобщението е класифицирано успешно!', 'success')  # Променяме на 'success' за зелен цвят
+
+            new_prediction = Prediction(
+                message_text=message,
+                prediction_class=prediction,
+                prediction_probability=probability,
+                author=current_user
+            )
+            db.session.add(new_prediction)
+            db.session.commit()
         else:
             # Ако има грешка, показваме нея като flash съобщение
             flash(prediction, 'danger')

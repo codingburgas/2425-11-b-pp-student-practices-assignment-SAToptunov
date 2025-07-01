@@ -19,5 +19,5 @@ def create_roles():
 
 # Това позволява да се стартира приложението директно с 'python run.py'
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
 

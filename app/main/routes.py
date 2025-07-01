@@ -1,8 +1,8 @@
 from flask import render_template, flash, redirect, url_for, request
 from flask_login import login_required, current_user
-from app.models import User
+from app.models import User, Prediction, Feedback
 from app.main import bp
-from app.main.forms import EditProfileForm # Добави този импорт
+from app.main.forms import EditProfileForm, FeedbackForm  # Добави този импорт
 from flask_login import current_user
 from app import db
 
@@ -17,14 +17,21 @@ def index():
 @bp.route('/user/<username>')
 @login_required
 def user_profile(username):
-    # Намираме потребителя в базата данни по потребителско име.
-    # first_or_404() автоматично ще върне 404 грешка, ако потребителят не е намерен.
     user = User.query.filter_by(username=username).first_or_404()
 
-    # Можем да подадем и някакви данни, например списък с неговите "анкети"
-    # posts = user.posts.order_by(Post.timestamp.desc()).all() # (Пример)
+    # --- НАЧАЛО НА ПРОМЯНАТА ---
+    # Правим изрична, директна заявка към таблицата Prediction,
+    # вместо да използваме user.predictions
+    predictions = Prediction.query.filter_by(user_id=user.id).order_by(Prediction.timestamp.desc()).all()
+    # ---------------------------
 
-    return render_template('main/user_profile.html', user=user, title=f"Профил на {user.username}")
+    # Дебъг принт, за да сме сигурни
+    print(f"DEBUG (директна заявка): Намерени предсказания: {predictions}")
+
+    return render_template('main/user_profile.html',
+                           user=user,
+                           predictions=predictions,
+                           title=f"Профил на {user.username}")
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
@@ -46,3 +53,30 @@ def edit_profile():
         form.email.data = current_user.email
 
     return render_template('main/edit_profile.html', title='Редакция на профил', form=form)
+
+@bp.route('/feedback', methods=['GET', 'POST'])
+@login_required
+def feedback():
+    form = FeedbackForm()
+    if form.validate_on_submit():
+        new_feedback = Feedback(
+            rating=int(form.rating.data),
+            comment=form.comment.data,
+            author=current_user
+        )
+        db.session.add(new_feedback)
+        db.session.commit()
+        flash('Благодарим за вашия отзив!', 'success')
+        return redirect(url_for('main.index'))
+    return render_template('main/feedback.html', title='Оставете отзив', form=form)
+
+
+@bp.route('/reviews')
+def reviews():
+    # Извличаме всички отзиви, сортирани по дата (най-новите първи)
+    # .join(User) прави оптимизация, за да зареди и данните за автора с една заявка
+    all_feedback = Feedback.query.join(User).order_by(Feedback.timestamp.desc()).all()
+
+    return render_template('main/reviews.html',
+                           title='Отзиви от нашите потребители',
+                           feedbacks=all_feedback)
