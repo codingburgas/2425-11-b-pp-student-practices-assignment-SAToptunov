@@ -5,6 +5,7 @@ import numpy as np
 import re
 import os
 import sys
+import json
 
 # --- 1. Дефинираме пътищата и променливите, но ги оставяме празни (None) ---
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -13,24 +14,27 @@ if BASE_DIR not in sys.path:
 
 from ai_model.logistic_regression_model import LogisticRegression
 
+STATS_PATH = os.path.join(BASE_DIR, 'ai_model', 'model_stats.json')
 MODEL_PATH = os.path.join(BASE_DIR, 'ai_model', 'spam_classifier_model.pkl')
 VOCAB_PATH = os.path.join(BASE_DIR, 'ai_model', 'vocabulary.pkl')
 
 # Глобални променливи за модела и речника
 model = None
 vocabulary = None
-
+model_stats = None
 
 def load_model_if_needed():
-    global model, vocabulary
-    if model is None or vocabulary is None:
-        print("--- AI моделът не е зареден. Зареждам го сега... ---")
+    global model, vocabulary, model_stats
+    if model is None or vocabulary is None or model_stats is None:
+        print("--- AI ресурсите не са заредени. Зареждам ги сега... ---")
         try:
             model = joblib.load(MODEL_PATH)
             vocabulary = joblib.load(VOCAB_PATH)
-            print("--- Моделът и речникът са заредени успешно. ---")
+            with open(STATS_PATH, 'r', encoding='utf-8') as f:
+                model_stats = json.load(f)
+            print("--- Модел, речник и статистики са заредени успешно. ---")
         except Exception as e:
-            print(f"ГРЕШКА при зареждане на модела: {e}")
+            print(f"ГРЕШКА при зареждане на AI ресурси: {e}")
             pass
 
 
@@ -39,6 +43,12 @@ def clean_text(text):
     text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
     return text
 
+def get_model_stats():
+    """
+    Връща заредените статистики. Уверява се, че са заредени, ако не са.
+    """
+    load_model_if_needed()
+    return model_stats
 
 def message_to_vector(message, vocab):
     word_vector = np.zeros(len(vocab))

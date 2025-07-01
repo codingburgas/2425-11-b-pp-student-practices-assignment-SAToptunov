@@ -3,20 +3,18 @@
 {% block title %}Класификатор на съобщения{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
+<div class="row">
+    <!-- Лява колона - Формата за класификация -->
+    <div class="col-lg-7">
         <div class="card shadow-sm">
             <div class="card-body">
                 <h2 class="card-title text-center mb-4">Класифицирай съобщение</h2>
-                <p class="text-center text-muted">Въведете текста, който искате да проверите, в полето по-долу.</p>
-                <form method="POST" action="{{ url_for('classifier.classify') }}" novalidate>
+                <p class="text-center text-muted">Въведете текста, който искате да проверите.</p>
+                <form method="POST" novalidate>
                     {{ form.hidden_tag() }}
                     <div class="mb-3">
                         {{ form.message_text.label(class="form-label") }}
                         {{ form.message_text(class="form-control", rows=8) }}
-                        {% for error in form.message_text.errors %}
-                            <span class="text-danger small">{{ error }}</span>
-                        {% endfor %}
                     </div>
                     <div class="d-grid">
                         {{ form.submit(class="btn btn-success") }}
@@ -24,7 +22,7 @@
                 </form>
 
                 {% if prediction and probability %}
-                <div class="mt-5 p-4 rounded-3
+                <div class="mt-4 p-4 rounded-3
                     {% if prediction == 'Spam' %} bg-danger text-white
                     {% else %} bg-success text-white
                     {% endif %}">
@@ -32,7 +30,56 @@
                     <p class="lead">Вероятността за това предсказание е: <strong>{{ "%.2f"|format(probability * 100) }}%</strong></p>
                 </div>
                 {% endif %}
+            </div>
+        </div>
+    </div>
 
+    <!-- ============================================= -->
+    <!-- === ДЯСНА КОЛОНА - МЕТРИКИ НА МОДЕЛА === -->
+    <!-- ============================================= -->
+    <div class="col-lg-5">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h4 class="card-title"><i class="bi bi-bar-chart-line-fill"></i> Качество на модела</h4>
+                <hr>
+
+                {# Използваме сигурната проверка, за всеки случай #}
+                {% if stats and 'accuracy' in stats %}
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Точност (Accuracy)
+                            <span class="badge bg-primary rounded-pill">{{ "%.2f"|format(stats.accuracy * 100) }}%</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            F1-Score
+                            <span class="badge bg-info rounded-pill">{{ "%.2f"|format(stats.f1_score) }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Прецизност (Precision)
+                            <span class="badge bg-secondary rounded-pill">{{ "%.2f"|format(stats.precision) }}</span>
+                        </li>
+                         <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Обхват (Recall)
+                            <span class="badge bg-secondary rounded-pill">{{ "%.2f"|format(stats.recall) }}</span>
+                        </li>
+                    </ul>
+
+                    <h5 class="mt-4">Ключови думи за "Spam"</h5>
+                    <p>
+                        {% for item in stats.top_spam_words %}
+                            <span class="badge bg-danger">{{ item.word }}</span>
+                        {% endfor %}
+                    </p>
+
+                     <h5 class="mt-3">Ключови думи за "Ham"</h5>
+                    <p>
+                        {% for item in stats.top_ham_words %}
+                            <span class="badge bg-success">{{ item.word }}</span>
+                        {% endfor %}
+                    </p>
+                {% else %}
+                    <p class="text-muted">Статистиките за модела не са налични.</p>
+                {% endif %}
             </div>
         </div>
     </div>

@@ -1,6 +1,7 @@
 import numpy as np
 import joblib
 import os
+import json
 
 # --- КОРЕКЦИЯ 1: Използване на относителен импорт ---
 # Тъй като train_model.py и logistic_regression_model.py са в един и същи пакет (ai_model),
@@ -134,8 +135,34 @@ print(top_spam_words.to_string(index=False))
 
 print("\nТоп 10 думи, сочещи към HAM (НЕ-SPAM):")
 print(top_ham_words.to_string(index=False))
-# --- КРАЙ НА НОВИЯ БЛОК ---
 
+
+print("-" * 30)
+
+print("-" * 20)
+print("Запазване на метриките от обучението...")
+
+# Създаваме речник с всички данни, които искаме да запазим
+model_stats = {
+    'accuracy': accuracy,
+    'error_rate': error,
+    'loss': loss,
+    'precision': precision,
+    'recall': recall,
+    'f1_score': f1,
+    'top_spam_words': top_spam_words.to_dict('records'),
+    'top_ham_words': top_ham_words.to_dict('records')
+}
+
+# Дефинираме пътя до новия файл
+STATS_PATH = os.path.join(CURRENT_DIR, 'model_stats.json')
+
+# Запазваме речника като JSON файл
+with open(STATS_PATH, 'w', encoding='utf-8') as f:
+    json.dump(model_stats, f, ensure_ascii=False, indent=4)
+
+print(f"Метриките са запазени в '{STATS_PATH}'")
+# --- КРАЙ НА НОВИЯ БЛОК ---
 
 print("-" * 30)
 
