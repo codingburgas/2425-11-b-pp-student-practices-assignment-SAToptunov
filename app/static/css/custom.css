@@ -1,0 +1,85 @@
+/* app/static/css/custom.css */
+
+/* --- 1. Основна цветова схема и фон --- */
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* --- 2. Навигационна лента --- */
+.navbar {
+    background-color: rgba(30, 30, 30, 0.9) !important;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease-in-out;
+    z-index: 1050;
+}
+
+.navbar-brand, .nav-link {
+    transition: color 0.2s ease;
+}
+
+.navbar-brand:hover, .nav-link:hover {
+    color: #0d6efd !important; /* Син акцент при hover */
+}
+
+/* --- 3. Стилизиране на "картите" (cards) --- */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1) !important;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15) !important;
+}
+
+.card-title {
+    font-weight: 600;
+}
+
+/* --- 4. Бутони --- */
+.btn-primary {
+    background: linear-gradient(45deg, #0d6efd, #0d6efd);
+    border: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #198754, #28a745);
+    border: none;
+}
+
+/* --- 5. Анимации --- */
+/* Анимация за плавно появяване на съдържанието */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Прилагаме анимацията към основния контейнер */
+main.container {
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+/* Анимация за резултата от класификацията */
+.prediction-result {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* --- 6. Начална страница "Hero" секция --- */
+.hero-section {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1554224155-8302f34036f6?q=80&w=2070'); /* Примерна картинка */
+    background-size: cover;
+    background-position: center;
+    color: white;
+    text-shadow: 2px 2px 8px rgba(0,0,0,0.7);
+}

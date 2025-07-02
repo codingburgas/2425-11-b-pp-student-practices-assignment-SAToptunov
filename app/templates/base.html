@@ -10,7 +10,7 @@
     <!-- Икони на Bootstrap -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
 
     <title>{% block title %}Spam Classifier{% endblock %}</title>
 </head>
@@ -69,7 +69,7 @@
 </nav>
 
 <!-- Основно съдържание -->
-<main class="container">
+<main class="container page-content">
     <!-- Flash съобщения -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}

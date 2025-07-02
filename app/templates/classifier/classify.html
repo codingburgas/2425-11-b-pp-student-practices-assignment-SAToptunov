@@ -22,7 +22,8 @@
                 </form>
 
                 {% if prediction and probability %}
-                <div class="mt-4 p-4 rounded-3
+                {# Добавяме клас 'prediction-result' за анимацията #}
+                <div class="mt-4 p-4 rounded-3 prediction-result
                     {% if prediction == 'Spam' %} bg-danger text-white
                     {% else %} bg-success text-white
                     {% endif %}">
@@ -42,43 +43,57 @@
             <div class="card-body">
                 <h4 class="card-title"><i class="bi bi-bar-chart-line-fill"></i> Качество на модела</h4>
                 <hr>
-
-                {# Използваме сигурната проверка, за всеки случай #}
                 {% if stats and 'accuracy' in stats %}
-                    <ul class="list-group list-group-flush">
+                    <p class="small text-muted">Тези метрики са изчислени върху независим тестов сет данни и показват колко добре се справя моделът с нови, невиждани съобщения.</p>
+
+                    <!-- Основни метрики -->
+                    <ul class="list-group list-group-flush mb-3">
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Точност (Accuracy)
                             <span class="badge bg-primary rounded-pill">{{ "%.2f"|format(stats.accuracy * 100) }}%</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             F1-Score
-                            <span class="badge bg-info rounded-pill">{{ "%.2f"|format(stats.f1_score) }}</span>
+                            <span class="badge bg-info text-dark rounded-pill">{{ "%.3f"|format(stats.f1_score) }}</span>
                         </li>
                         <li class="list-group-item d-flex justify-content-between align-items-center">
                             Прецизност (Precision)
-                            <span class="badge bg-secondary rounded-pill">{{ "%.2f"|format(stats.precision) }}</span>
+                            <span class="badge bg-secondary rounded-pill">{{ "%.3f"|format(stats.precision) }}</span>
                         </li>
                          <li class="list-group-item d-flex justify-content-between align-items-center">
                             Обхват (Recall)
-                            <span class="badge bg-secondary rounded-pill">{{ "%.2f"|format(stats.recall) }}</span>
+                            <span class="badge bg-secondary rounded-pill">{{ "%.3f"|format(stats.recall) }}</span>
+                        </li>
+                         <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Ентропия (Log-Loss)
+                            <span class="badge bg-light text-dark rounded-pill">{{ "%.3f"|format(stats.logloss) }}</span>
                         </li>
                     </ul>
 
-                    <h5 class="mt-4">Ключови думи за "Spam"</h5>
+                    <!-- Матрица на объркванията -->
+                    <h5 class="mt-4">Матрица на объркванията</h5>
+                    {% if stats.confusion_matrix_path %}
+                        <img src="{{ url_for('static', filename='ai_model/confusion_matrix.png') }}" class="img-fluid rounded" alt="Confusion Matrix">
+                    {% else %}
+                        <p class="text-muted small">Изображението не е налично.</p>
+                    {% endif %}
+
+                    <h5 class="mt-4">Най-влиятелни думи</h5>
+                    <p class="small text-muted">Думите, които най-силно влияят на решението на модела.</p>
+                    <strong>За SPAM:</strong>
                     <p>
                         {% for item in stats.top_spam_words %}
                             <span class="badge bg-danger">{{ item.word }}</span>
                         {% endfor %}
                     </p>
-
-                     <h5 class="mt-3">Ключови думи за "Ham"</h5>
+                    <strong>За HAM (не-спам):</strong>
                     <p>
                         {% for item in stats.top_ham_words %}
                             <span class="badge bg-success">{{ item.word }}</span>
                         {% endfor %}
                     </p>
                 {% else %}
-                    <p class="text-muted">Статистиките за модела не са налични.</p>
+                    <p class="text-muted">Статистиките за модела не са налични. Моля, стартирайте скрипта за обучение.</p>
                 {% endif %}
             </div>
         </div>

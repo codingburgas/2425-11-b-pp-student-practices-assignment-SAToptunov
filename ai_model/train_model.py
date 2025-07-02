@@ -1,176 +1,162 @@
-import numpy as np
-import joblib
 import os
 import json
+import numpy as np
+import pandas as pd
+import joblib
+import matplotlib.pyplot as plt
+import seaborn as sns
 
-# --- КОРЕКЦИЯ 1: Използване на относителен импорт ---
-# Тъй като train_model.py и logistic_regression_model.py са в един и същи пакет (ai_model),
-# използваме точка (.), за да кажем на Python да търси в текущата папка.
+# Използване на относителен импорт
 from .logistic_regression_model import LogisticRegression
 
-# --- 1. Дефиниране на метрики за оценка (Изискване 5) ---
-# Това е направено отлично, оставяме го както е.
 
-def precision_recall_f1_score(y_true, y_pred):
-    """
-    Изчислява Precision, Recall и F1-Score.
-    Работи за бинарна класификация, където позитивният клас е 1 (Spam).
-    """
-    # True Positives (TP): Предсказано е 1, реално е 1
-    tp = np.sum((y_true == 1) & (y_pred == 1))
-
-    # False Positives (FP): Предсказано е 1, реално е 0
-    fp = np.sum((y_true == 0) & (y_pred == 1))
-
-    # False Negatives (FN): Предсказано е 0, реално е 1
-    fn = np.sum((y_true == 1) & (y_pred == 0))
-
-    # Изчисляване на метриките
-    # Добавяме малка стойност (epsilon), за да избегнем деление на нула
-    epsilon = 1e-7
-
-    precision = tp / (tp + fp + epsilon)
-    recall = tp / (tp + fn + epsilon)
-    f1 = 2 * (precision * recall) / (precision + recall + epsilon)
-
-    return precision, recall, f1
+# ==============================================================================
+# --- СЕКЦИЯ 1: ДЕФИНИРАНЕ НА МЕТРИКИ ЗА ОЦЕНКА ---
+# ==============================================================================
 
 def accuracy_score(y_true, y_pred):
     """Изчислява точността (accuracy)."""
-    correct_predictions = np.sum(y_true == y_pred)
-    return correct_predictions / len(y_true)
+    return np.sum(y_true == y_pred) / len(y_true)
+
 
 def error_rate(y_true, y_pred):
     """Изчислява процента грешки (error rate)."""
     return 1 - accuracy_score(y_true, y_pred)
 
+
 def binary_cross_entropy(y_true, y_pred_proba):
-    """Изчислява Binary Cross-Entropy Loss."""
+    """Изчислява Binary Cross-Entropy Loss (Ентропия)."""
     epsilon = 1e-15
     y_pred_proba = np.clip(y_pred_proba, epsilon, 1 - epsilon)
     return -np.mean(y_true * np.log(y_pred_proba) + (1 - y_true) * np.log(1 - y_pred_proba))
 
 
-# --- КОРЕКЦИЯ 2: Динамично намиране на пътищата ---
-# Това прави скрипта независим от това от коя директория се стартира.
-# __file__ е пътят до текущия файл (train_model.py)
-# os.path.dirname(__file__) е папката, в която се намира (ai_model/)
+def precision_recall_f1_score(y_true, y_pred):
+    """Изчислява Precision, Recall и F1-Score."""
+    tp = np.sum((y_true == 1) & (y_pred == 1))
+    fp = np.sum((y_true == 0) & (y_pred == 1))
+    fn = np.sum((y_true == 1) & (y_pred == 0))
+    epsilon = 1e-7
+    precision = tp / (tp + fp + epsilon)
+    recall = tp / (tp + fn + epsilon)
+    f1 = 2 * (precision * recall) / (precision + recall + epsilon)
+    return precision, recall, f1
+
+
+def plot_and_save_confusion_matrix(y_true, y_pred, output_dir):
+    """Създава и запазва графика на матрицата на объркванията."""
+    os.makedirs(output_dir, exist_ok=True)
+    tn = np.sum((y_true == 0) & (y_pred == 0))
+    fp = np.sum((y_true == 0) & (y_pred == 1))
+    fn = np.sum((y_true == 1) & (y_pred == 0))
+    tp = np.sum((y_true == 1) & (y_pred == 1))
+    matrix = [[tn, fp], [fn, tp]]
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+    sns.heatmap(matrix, annot=True, fmt='d', cmap='Blues', ax=ax,
+                xticklabels=['Ham (Predicted)', 'Spam (Predicted)'],
+                yticklabels=['Ham (Actual)', 'Spam (Actual)'])
+    ax.set_title('Матрица на объркванията (Confusion Matrix)')
+    ax.set_ylabel('Реален етикет')
+    ax.set_xlabel('Предсказан етикет')
+
+    matrix_path = os.path.join(output_dir, 'confusion_matrix.png')
+    plt.savefig(matrix_path, bbox_inches='tight')
+    plt.close(fig)
+    print(f"\nМатрицата на объркванията е запазена в '{matrix_path}'")
+    return matrix_path
+
+
+# ==============================================================================
+# --- ОСНОВНА ЛОГИКА НА СКРИПТА ---
+# ==============================================================================
+
+# Динамично намиране на пътищата
 CURRENT_DIR = os.path.dirname(__file__)
 DATA_PATH = os.path.join(CURRENT_DIR, 'processed_data.npz')
 MODEL_PATH = os.path.join(CURRENT_DIR, 'spam_classifier_model.pkl')
-# Речникът ще бъде запазен в същата папка, но трябва да го заредим от данните първо.
 VOCAB_PATH = os.path.join(CURRENT_DIR, 'vocabulary.pkl')
+STATS_PATH = os.path.join(CURRENT_DIR, 'model_stats.json')
 
-
-# --- 2. Зареждане на обработените данни ---
+# --- 1. Зареждане на данни ---
 print("Стъпка 1: Зареждане на данните...")
 try:
-    # Зареждаме от динамично изчисления път
     data = np.load(DATA_PATH, allow_pickle=True)
     X_train, y_train = data['X_train'], data['y_train']
     X_test, y_test = data['X_test'], data['y_test']
-    # Зареждаме речника, който е запазен по време на препроцесинга
     vocabulary = data['vocabulary']
     print("Данните и речникът са заредени успешно.")
     print("-" * 30)
 except FileNotFoundError:
-    print(f"Грешка: Файлът '{DATA_PATH}' не е намерен.")
-    print("Моля, първо изпълнете 'ai_model/main_preprocessing.py'.")
+    print(f"Грешка: Файлът '{DATA_PATH}' не е намерен. Моля, първо изпълнете 'main_preprocessing.py'.")
     exit()
 
-
-# --- 3. Трениране на модела ---
+# --- 2. Трениране на модела ---
 print("Стъпка 2: Трениране на модела Logistic Regression...")
-model = LogisticRegression(learning_rate=0.1, n_iterations=1500, verbose=True)
+model = LogisticRegression(learning_rate=0.1, n_iterations=1000, verbose=True)
 model.fit(X_train, y_train)
 print("Моделът е обучен.")
 print("-" * 30)
 
-
-# --- 4. Оценка на модела ---
+# --- 3. Оценка на модела ---
 print("Стъпка 3: Оценка на модела върху тестовите данни...")
 y_pred_test = model.predict(X_test)
 y_pred_proba_test = model.predict_proba(X_test)
 
+# Изчисляване на всички метрики
 accuracy = accuracy_score(y_test, y_pred_test)
 error = error_rate(y_test, y_pred_test)
 loss = binary_cross_entropy(y_test, y_pred_proba_test)
-precision, recall, f1 = precision_recall_f1_score(y_test, y_pred_test) # Извикваме новата функция
+precision, recall, f1 = precision_recall_f1_score(y_test, y_pred_test)
 
-print(f"Точност (Accuracy): {accuracy:.4f} ({accuracy*100:.2f}%)")
-print(f"Процент грешки (Error Rate): {error:.4f} ({error*100:.2f}%)")
-print(f"Загуба (Loss) на тестовия сет: {loss:.4f}")
+print(f"Точност (Accuracy): {accuracy:.4f} ({accuracy * 100:.2f}%)")
+print(f"Ентропия (Log-Loss): {loss:.4f}")
 print("-" * 20)
 print("Детайлни метрики за класификация:")
-print(f"Прецизност (Precision): {precision:.4f} -> От всички предсказани като 'Spam', {precision*100:.2f}% са били реално 'Spam'.")
-print(f"Обхват (Recall): {recall:.4f} -> Моделът е 'хванал' {recall*100:.2f}% от всички реални 'Spam' съобщения.")
-print(f"F1-Score: {f1:.4f} -> Хармонична среда между Precision и Recall.")
-# --- КРАЙ НА ПРОМЕНИТЕ ---
+print(f"Прецизност (Precision): {precision:.4f}")
+print(f"Обхват (Recall): {recall:.4f}")
+print(f"F1-Score: {f1:.4f}")
 
-print("-" * 30)
+# Генериране и запазване на Confusion Matrix
+saved_matrix_path = plot_and_save_confusion_matrix(y_test, y_pred_test, output_dir=CURRENT_DIR)
 
-# --- НАЧАЛО НА НОВИЯ БЛОК ---
-# Показване на най-важните думи (признаци)
-print("-" * 20)
-print("Анализ на най-важните думи за класификация:")
+# --- 4. Анализ на теглата и запазване на статистики ---
+print("\n" + "-" * 20)
+print("Анализ и запазване на статистики...")
 
-# Взимаме теглата от обучения модел
 feature_weights = model.get_feature_weights()
-
-# Създаваме DataFrame с думите и техните тегла
-import pandas as pd # Увери се, че pandas е импортиран най-отгоре
-features_df = pd.DataFrame({
-    'word': vocabulary,
-    'weight': feature_weights
-})
-
-# Сортираме, за да видим най-важните думи
-# Големите положителни тегла -> силни индикатори за SPAM (клас 1)
-# Големите отрицателни тегла -> силни индикатори за HAM (клас 0)
+features_df = pd.DataFrame({'word': vocabulary, 'weight': feature_weights})
 top_spam_words = features_df.sort_values(by='weight', ascending=False).head(10)
 top_ham_words = features_df.sort_values(by='weight', ascending=True).head(10)
 
 print("\nТоп 10 думи, сочещи към SPAM:")
 print(top_spam_words.to_string(index=False))
-
 print("\nТоп 10 думи, сочещи към HAM (НЕ-SPAM):")
 print(top_ham_words.to_string(index=False))
 
-
-print("-" * 30)
-
-print("-" * 20)
-print("Запазване на метриките от обучението...")
-
-# Създаваме речник с всички данни, които искаме да запазим
+# Събиране на всички статистики в един речник
 model_stats = {
     'accuracy': accuracy,
-    'error_rate': error,
-    'loss': loss,
+    'logloss': loss,
     'precision': precision,
     'recall': recall,
     'f1_score': f1,
     'top_spam_words': top_spam_words.to_dict('records'),
-    'top_ham_words': top_ham_words.to_dict('records')
+    'top_ham_words': top_ham_words.to_dict('records'),
+    'confusion_matrix_path': os.path.join('ai_model', os.path.basename(saved_matrix_path))
 }
 
-# Дефинираме пътя до новия файл
-STATS_PATH = os.path.join(CURRENT_DIR, 'model_stats.json')
-
-# Запазваме речника като JSON файл
+# Запазване на статистиките в JSON файл
 with open(STATS_PATH, 'w', encoding='utf-8') as f:
     json.dump(model_stats, f, ensure_ascii=False, indent=4)
-
-print(f"Метриките са запазени в '{STATS_PATH}'")
-# --- КРАЙ НА НОВИЯ БЛОК ---
+print(f"\nМетриките са запазени в '{STATS_PATH}'")
 
 print("-" * 30)
 
 # --- 5. Запазване на тренирания модел и речника ---
-print("Стъпка 4: Запазване на тренирания модел и речника...")
-# Запазваме на динамично изчислените пътища
+print("Стъпка 5: Запазване на финалните артефакти...")
 joblib.dump(model, MODEL_PATH)
-joblib.dump(vocabulary, VOCAB_PATH) # Запазваме и речника!
+joblib.dump(vocabulary, VOCAB_PATH)
 print(f"Моделът е запазен в '{MODEL_PATH}'")
 print(f"Речникът е запазен в '{VOCAB_PATH}'")
-print("Тренировъчният процес е завършен!")
+print("\nТренировъчният процес е завършен!")

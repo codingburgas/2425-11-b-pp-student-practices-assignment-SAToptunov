@@ -1,38 +1,44 @@
-
 {% extends "base.html" %}
 
 {% block title %}Начало - Spam Classifier{% endblock %}
 
 {% block content %}
-<div class="p-5 mb-4 bg-white rounded-3 shadow-sm">
+<!-- Заменяме стария блок с новата "Hero" секция -->
+<div class="p-5 mb-4 rounded-3 hero-section text-center">
     <div class="container-fluid py-5">
-        {% if current_user.is_authenticated %}
-            <h1 class="display-5 fw-bold">Здравей, {{ current_user.username }}!</h1>
-            <p class="col-md-8 fs-4">Добре дошъл отново в Spam Classifier. Готов ли си да разчистиш пощата си от нежелани съобщения?</p>
-            <a href="{{ url_for('classifier.classify') }}" class="btn btn-primary btn-lg">
-                <i class="bi bi-shield-shaded"></i> Отиди към класификатора
-            </a>
+        <h1 class="display-4 fw-bold">Кажете "Стоп!" на спама.</h1>
+        <p class="fs-4 col-md-10 mx-auto">Нашият интелигентен класификатор, изграден от нулата, ви помага да филтрирате нежеланите съобщения бързо и ефективно.</p>
+        {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg mt-3">Започни безплатно</a>
         {% else %}
-            <h1 class="display-5 fw-bold">Защити се от Spam</h1>
-            <p class="col-md-8 fs-4">Използвай силата на изкуствения интелект, за да класифицираш твоите имейли и съобщения. Регистрирай се сега, за да започнеш.</p>
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg">Създай акаунт</a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-lg">Влез в системата</a>
+             <a href="{{ url_for('classifier.classify') }}" class="btn btn-primary btn-lg mt-3">
+                <i class="bi bi-shield-shaded"></i> Опитай сега!
+            </a>
         {% endif %}
     </div>
 </div>
 
-<div class="row align-items-md-stretch">
-    <div class="col-md-6">
-        <div class="h-100 p-5 text-white bg-dark rounded-3">
-            <h2>Как работи?</h2>
-            <p>Нашият модел, базиран на Логистична Регресия и имплементиран от нулата, анализира текста на вашето съобщение и изчислява вероятността то да е спам. Всичко става за секунди!</p>
+<!-- Секция с предимства -->
+<div class="row text-center mt-5">
+    <div class="col-md-4">
+        <div class="card p-3 h-100">
+            <i class="bi bi-cpu-fill fs-1 text-primary"></i>
+            <h3 class="mt-3">Мощен AI</h3>
+            <p class="text-muted">Имплементиран от нулата, нашият модел се учи и адаптира, за да ви предостави най-добрата защита.</p>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="h-100 p-5 bg-white border rounded-3">
-            <h2>Допринеси!</h2>
-            <p>Помогни ни да направим модела още по-умен! Чрез нашата система за анкети можеш да подаваш примери за съобщения, които да използваме за бъдещи обучения.</p>
-            <a href="#" class="btn btn-outline-secondary">Към анкетите (скоро)</a>
+    <div class="col-md-4">
+         <div class="card p-3 h-100">
+            <i class="bi bi-shield-lock-fill fs-1 text-primary"></i>
+            <h3 class="mt-3">Сигурност</h3>
+            <p class="text-muted">Вашите данни са важни. Ние не ги съхраняваме, освен ако изрично не допринесете към нашите анкети.</p>
+        </div>
+    </div>
+    <div class="col-md-4">
+         <div class="card p-3 h-100">
+            <i class="bi bi-speedometer2 fs-1 text-primary"></i>
+            <h3 class="mt-3">Бързина</h3>
+            <p class="text-muted">Получете резултат за милисекунди. Без чакане, без забавяне – само чиста ефективност.</p>
         </div>
     </div>
 </div>
